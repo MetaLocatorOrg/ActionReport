@@ -223,8 +223,8 @@ class API extends \Piwik\Plugin\API
         $allMetricNames = array("custom_dimension_1");
         $metaDataArray = new MetaDataArray($allMetricNames);
         # Debug replace $rows by dataArray
-        foreach ($dataArray as $row) {
-        #foreach ($rows as $row) {
+        #foreach ($dataArray as $row) {
+        foreach ($rows as $row) {
             $firstLevelLabel = "Not defined";
             $secondLevelLabel = "Not defined";
             $thirdLevelLabel = "Not defined";
