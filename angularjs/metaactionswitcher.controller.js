@@ -24,10 +24,27 @@
         this.dimension4Name = null;
         this.dimension5Name = null;
         this.actionTypeOptions = [
-            {key: 43, value: 'Search'},
-            {key: 17, value: 'OpenMarkerWindow'},
-            {key: 161, value: 'getDirections'},
-            {key: 115, value: 'Details'}
+            {value: 'Search', key: 43},
+            {value: 'Category', key: 13139640},
+            {value: 'OpenMarkerWindow', key: 17},
+            {value: 'Postal Code', key: 13147780},
+            {value: 'Click', key: 5805100},
+            {value: 'Details', key: 115},
+            {value: 'Keyword', key: 13140307},
+            {value: 'WebsiteClick', key: 13345557},
+            {value: 'Click To Call', key: 5885831},
+            {value: 'Interstitial-Button', key: 26773430},
+            {value: 'EmailLeadOpen', key: 22622942},
+            {value: 'Tab', key: 18107917},
+            {value: 'Lead', key: 15350502},
+            {value: 'EmailLeadSend', key: 22622892},
+            {value: 'getDirections', key: 161},
+            {value: 'EmailLeadNoticeOpen', key: 25669360},
+            {value: 'SendToEmail', key: 23075289},
+            {value: 'EmailLeadDisplay', key: 25669342},
+            {value: 'EmailLeadConfirmationSend', key: 25669654},
+            {value: 'SendToPhone', key: 28662167},
+            {value: 'ButtonView', key: 24173919}
         ];
         this.isLoading = false;
         this.transitions = null;
