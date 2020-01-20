@@ -17,6 +17,7 @@ use Piwik\Db;
 use Piwik\Common;
 use Piwik\Period\Factory as PeriodFactory;
 use Piwik\Plugins\MetaActionReport\MetaDataArray;
+use Piwik\Segment;
 
 
 function getSubTableRecursive($dataTable, $idSubtable) {
@@ -59,6 +60,15 @@ class API extends \Piwik\Plugin\API
         return $useless1;
     }
 
+    private function getDimensionQuery($number_of_dimension)
+    {
+        $result = "";
+        for($i = 1; $i < $number_of_dimension + 1; ++$i) {
+            $result .= ", log_link_visit_action.`custom_dimension_" . $i ."`";
+        }
+        return $result;
+    }
+
     public function getDimensionBySite($idSite, $period, $date, $segment = false)
     {
         $dimensions = Request::processRequest('CustomDimensions.getConfiguredCustomDimensions', ['idSite' => $idSite], []);
@@ -87,7 +97,7 @@ class API extends \Piwik\Plugin\API
      * @param bool|string $segment
      * @return DataTable
      */
-    public function getEventAction($idSite, $period, $date, $dimension1Name="custom_dimension_1", $dimension2Name="custom_dimension_2", $dimension3Name="custom_dimension_3", $dimension4Name="custom_dimension_4", $dimension5Name="custom_dimension_5", $idAction=1, $idSubtable=null)
+    public function getEventAction($idSite, $period, $date, $segment = false, $dimension1Name="custom_dimension_1", $dimension2Name="custom_dimension_2", $dimension3Name="custom_dimension_3", $dimension4Name="custom_dimension_4", $dimension5Name="custom_dimension_5", $idAction=1, $idSubtable=null)
     {
         Piwik::checkUserHasViewAccess($idSite);
         $query = "
@@ -99,21 +109,6 @@ class API extends \Piwik\Plugin\API
           la.`custom_dimension_3`,
           la.`custom_dimension_4`,
           la.`custom_dimension_5`,
-          la.`custom_dimension_6`,
-          la.`custom_dimension_7`,
-          la.`custom_dimension_8`,
-          la.`custom_dimension_9`,
-          la.`custom_dimension_10`,
-          la.`custom_dimension_11`,
-          la.`custom_dimension_12`,
-          la.`custom_dimension_13`,
-          la.`custom_dimension_14`,
-          la.`custom_dimension_15`,
-          la.`custom_dimension_16`,
-          la.`custom_dimension_17`,
-          la.`custom_dimension_18`,
-          la.`custom_dimension_19`,
-          la.`custom_dimension_20`,
           a.name AS event_action ,
           aa.name AS action_name,
           CASE
@@ -146,9 +141,79 @@ class API extends \Piwik\Plugin\API
         }
         $startDate = $real_period->getDateTimeStart()->getDatetime();
         $endDate = $real_period->getDateTimeEnd()->getDatetime();
+        $dimension_query = $this->getDimensionQuery(20);
+
+        $select = "log_link_visit_action.idaction_event_action, log_link_visit_action.idaction_name, log_link_visit_action.server_time, log_link_visit_action.idlink_va " . $dimension_query;
+        $from = "log_link_visit_action";
+        $where = "log_link_visit_action.idsite = ? AND log_link_visit_action.server_time >= ? AND log_link_visit_action.server_time <= ? AND log_link_visit_action.idaction_event_action = ?";
+        $whereBind = array($idSite, $startDate, $endDate,  $idAction);
+        $orderBy = False;
+        $groupBy = False;
+        $segment = new Segment($segment, $idSite);
+        $queryInfo = $segment->getSelectQuery($select, $from, $where, $whereBind, $orderBy, $groupBy);
+
+        $sql = "SELECT 
+                log_link_visit_action.server_time,
+                log_link_visit_action.idlink_va
+                " . $dimension_query . "
+                , a.name AS event_action ,
+                aa.name AS action_name,
+                CASE
+                  WHEN LOCATE('No Results', aa.name) > 0
+                  THEN 1
+                 ELSE 0
+                END AS NO_RESULTS,
+                CASE
+                  WHEN LOCATE('Autofind', aa.name) > 0
+                  THEN 1
+                  ELSE 0
+                END AS AUTOFIND
+                FROM ({$queryInfo['sql']}) as log_link_visit_action 
+                LEFT JOIN " . Common::prefixTable('log_action') . " a
+                ON a.`idaction` = log_link_visit_action.`idaction_event_action`
+                LEFT JOIN " . Common::prefixTable('log_action') . " aa
+                ON aa.`idaction` = log_link_visit_action.`idaction_name`";
+        $bind = $queryInfo['bind'];
         $db = $this->getDb();
-        $rows = $db->fetchAll($query, array($idSite, $startDate, $endDate, $idAction));
+        $rows = $db->fetchAll($sql, $bind);
         $dataTable = new DataTable();
+        //$subTablesByKey[$key] = DataTable::makeFromIndexedArray($labelPerKey);
+        $planetRatios = array(
+            "0" => 1,
+        );
+        DataTable::setMaximumDepthLevelAllowedAtLeast(5);
+        $allMetricNames = array("custom_dimension_1");
+        $metaDataArray = new MetaDataArray($allMetricNames);
+        # Debug replace $rows by dataArray
+        #foreach ($dataArray as $row) {
+        foreach ($rows as $row) {
+            $firstLevelLabel = "Not defined";
+            $secondLevelLabel = "Not defined";
+            $thirdLevelLabel = "Not defined";
+            if (isset($row[$dimension1Name])) {
+                $firstLevelLabel = $row[$dimension1Name];
+            }
+            if (isset($row[$dimension2Name])) {
+                $secondLevelLabel = $row[$dimension2Name];
+            }
+            if (isset($row[$dimension3Name])) {
+                $thirdLevelLabel = $row[$dimension3Name];
+            }
+            $countArray = ["0" => 1];
+            $metaDataArray->computeMetrics($countArray, $firstLevelLabel);
+            $metaDataArray->computeMetricsLevel2($countArray, $firstLevelLabel, $secondLevelLabel);
+            $metaDataArray->computeMetricsLevel3($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel);
+        }
+        $dataTable = $metaDataArray->asDataTable();
+         
+        if ($idSubtable) {
+            return getSubTableRecursive($dataTable, $idSubtable);
+        } 
+        return $dataTable;
+    }
+
+    private function getExampleDataArray()
+    {
         $dataArray = array();
         $dataArray[] = array(
             "server_time" => "",
@@ -215,38 +280,6 @@ class API extends \Piwik\Plugin\API
             "NO_RESULTS" => 0,
             "AUTOFIND" => 1
         );
-        //$subTablesByKey[$key] = DataTable::makeFromIndexedArray($labelPerKey);
-        $planetRatios = array(
-            "0" => 1,
-        );
-        DataTable::setMaximumDepthLevelAllowedAtLeast(5);
-        $allMetricNames = array("custom_dimension_1");
-        $metaDataArray = new MetaDataArray($allMetricNames);
-        # Debug replace $rows by dataArray
-        #foreach ($dataArray as $row) {
-        foreach ($rows as $row) {
-            $firstLevelLabel = "Not defined";
-            $secondLevelLabel = "Not defined";
-            $thirdLevelLabel = "Not defined";
-            if (isset($row[$dimension1Name])) {
-                $firstLevelLabel = $row[$dimension1Name];
-            }
-            if (isset($row[$dimension2Name])) {
-                $secondLevelLabel = $row[$dimension2Name];
-            }
-            if (isset($row[$dimension3Name])) {
-                $thirdLevelLabel = $row[$dimension3Name];
-            }
-            $countArray = ["0" => 1];
-            $metaDataArray->computeMetrics($countArray, $firstLevelLabel);
-            $metaDataArray->computeMetricsLevel2($countArray, $firstLevelLabel, $secondLevelLabel);
-            $metaDataArray->computeMetricsLevel3($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel);
-        }
-        $dataTable = $metaDataArray->asDataTable();
-         
-        if ($idSubtable) {
-            return getSubTableRecursive($dataTable, $idSubtable);
-        } 
-        return $dataTable;
+        return $dataArray;
     }
 }
