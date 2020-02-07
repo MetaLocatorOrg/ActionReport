@@ -76,8 +76,8 @@ class GetEventAction extends Base
         if (!is_array($view->config->custom_parameters)) {
             $view->config->custom_parameters = array();
         }
-        if (!in_array("actionType", $view->config->custom_parameters)) { 
-            $view->config->custom_parameters["actionType"] = Common::getRequestVar('idAction', false, 'string');
+        if (!in_array("idAction", $view->config->custom_parameters)) { 
+            $view->config->custom_parameters["idAction"] = Common::getRequestVar('idAction', false, 'string');
         }
 
         if (!in_array("dimension1Name", $view->config->custom_parameters)) { 
