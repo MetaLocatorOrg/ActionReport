@@ -97,7 +97,7 @@ class API extends \Piwik\Plugin\API
      * @param bool|string $segment
      * @return DataTable
      */
-    public function getEventAction($idSite, $period, $date, $segment = false, $dimension1Name="custom_dimension_1", $dimension2Name="custom_dimension_2", $dimension3Name="custom_dimension_3", $dimension4Name="custom_dimension_4", $dimension5Name="custom_dimension_5", $idAction=1, $idSubtable=null)
+    public function getEventAction($idSite, $period, $date, $segment = false, $dimension1Name="", $dimension2Name="", $dimension3Name="", $dimension4Name="", $dimension5Name="", $idAction=1, $idSubtable=null)
     {
         Piwik::checkUserHasViewAccess($idSite);
         $query = "
@@ -135,7 +135,7 @@ class API extends \Piwik\Plugin\API
         ORDER BY la.server_time DESC 
         ";
         if (strpos($date, ',') === false) {
-            $real_period = PeriodFactory::build('day', $date);
+            $real_period = PeriodFactory::build($period, $date);
         } else {
             $real_period = PeriodFactory::build('range', $date);
         }
@@ -191,16 +191,24 @@ class API extends \Piwik\Plugin\API
             if (isset($row[$dimension1Name])) {
                 $firstLevelLabel = $row[$dimension1Name];
             }
-            if (isset($row[$dimension2Name])) {
-                $secondLevelLabel = $row[$dimension2Name];
+            if ($dimension2Name) {
+                if (isset($row[$dimension2Name])) {
+                    $secondLevelLabel = $row[$dimension2Name];
+                }
             }
-            if (isset($row[$dimension3Name])) {
-                $thirdLevelLabel = $row[$dimension3Name];
+            if ($dimension2Name && $dimension3Name) {
+                if (isset($row[$dimension3Name])) {
+                    $thirdLevelLabel = $row[$dimension3Name];
+                }
             }
             $countArray = ["0" => 1];
             $metaDataArray->computeMetrics($countArray, $firstLevelLabel);
-            $metaDataArray->computeMetricsLevel2($countArray, $firstLevelLabel, $secondLevelLabel);
-            $metaDataArray->computeMetricsLevel3($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel);
+            if ($dimension2Name) {
+                $metaDataArray->computeMetricsLevel2($countArray, $firstLevelLabel, $secondLevelLabel);
+            }
+            if ($dimension2Name && $dimension3Name) {
+                $metaDataArray->computeMetricsLevel3($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel);
+            }
         }
         $dataTable = $metaDataArray->asDataTable();
          
