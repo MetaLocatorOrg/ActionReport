@@ -178,9 +178,6 @@ class API extends \Piwik\Plugin\API
         $rows = $db->fetchAll($sql, $bind);
         $dataTable = new DataTable();
         //$subTablesByKey[$key] = DataTable::makeFromIndexedArray($labelPerKey);
-        $planetRatios = array(
-            "0" => 1,
-        );
         DataTable::setMaximumDepthLevelAllowedAtLeast(5);
         $allMetricNames = array("custom_dimension_1");
         $metaDataArray = new MetaDataArray($allMetricNames);
@@ -200,7 +197,7 @@ class API extends \Piwik\Plugin\API
             if (isset($row[$dimension3Name])) {
                 $thirdLevelLabel = $row[$dimension3Name];
             }
-            $countArray = ["Total_Action" => 1];
+            $countArray = ["0" => 1];
             $metaDataArray->computeMetrics($countArray, $firstLevelLabel);
             $metaDataArray->computeMetricsLevel2($countArray, $firstLevelLabel, $secondLevelLabel);
             $metaDataArray->computeMetricsLevel3($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel);
