@@ -102,7 +102,7 @@ class GetEventAction extends Base
 
         $header_view = new View('@MetaActionReport/_Selector');
         $header_view->clientSideParameters = $view->config->custom_parameters;
-        $view->requestConfig->request_parameters_to_modify["actionType"] = $view->config->custom_parameters["actionType"];
+        $view->requestConfig->request_parameters_to_modify["idAction"] = $view->config->custom_parameters["idAction"];
         $view->requestConfig->request_parameters_to_modify["dimension1Name"] = $view->config->custom_parameters["dimension1Name"];
         $view->requestConfig->request_parameters_to_modify["dimension2Name"] = $view->config->custom_parameters["dimension2Name"];
         $view->requestConfig->request_parameters_to_modify["dimension3Name"] = $view->config->custom_parameters["dimension3Name"];
