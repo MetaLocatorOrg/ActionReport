@@ -184,6 +184,7 @@ class API extends \Piwik\Plugin\API
         DataTable::setMaximumDepthLevelAllowedAtLeast(5);
         $allMetricNames = array("custom_dimension_1");
         $metaDataArray = new MetaDataArray($allMetricNames);
+        $dataArray = $this->getExampleDataArray();
         # Debug replace $rows by dataArray
         #foreach ($dataArray as $row) {
         foreach ($rows as $row) {
@@ -199,7 +200,7 @@ class API extends \Piwik\Plugin\API
             if (isset($row[$dimension3Name])) {
                 $thirdLevelLabel = $row[$dimension3Name];
             }
-            $countArray = ["0" => 1];
+            $countArray = ["Total_Action" => 1];
             $metaDataArray->computeMetrics($countArray, $firstLevelLabel);
             $metaDataArray->computeMetricsLevel2($countArray, $firstLevelLabel, $secondLevelLabel);
             $metaDataArray->computeMetricsLevel3($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel);

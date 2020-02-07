@@ -9,9 +9,9 @@
 (function () {
     angular.module('piwikApp').controller('MetaActionSwitcherController', MetaActionSwitcherController);
 
-    MetaActionSwitcherController.$inject = ['piwikApi', '$filter', '$rootScope'];
+    MetaActionSwitcherController.$inject = ['piwikApi', '$filter', '$rootScope', '$location'];
 
-    function MetaActionSwitcherController(piwikApi, $filter, $rootScope) {
+    function MetaActionSwitcherController(piwikApi, $filter, $rootScope, $location, piwikReportExport) {
         var translate = $filter('translate');
 
         var self = this;
@@ -24,27 +24,27 @@
         this.dimension4Name = null;
         this.dimension5Name = null;
         this.actionTypeOptions = [
-            {value: 'Search', key: 43},
-            {value: 'Category', key: 13139640},
-            {value: 'OpenMarkerWindow', key: 17},
-            {value: 'Postal Code', key: 13147780},
-            {value: 'Click', key: 5805100},
-            {value: 'Details', key: 115},
-            {value: 'Keyword', key: 13140307},
-            {value: 'WebsiteClick', key: 13345557},
-            {value: 'Click To Call', key: 5885831},
-            {value: 'Interstitial-Button', key: 26773430},
-            {value: 'EmailLeadOpen', key: 22622942},
-            {value: 'Tab', key: 18107917},
-            {value: 'Lead', key: 15350502},
-            {value: 'EmailLeadSend', key: 22622892},
-            {value: 'getDirections', key: 161},
-            {value: 'EmailLeadNoticeOpen', key: 25669360},
-            {value: 'SendToEmail', key: 23075289},
-            {value: 'EmailLeadDisplay', key: 25669342},
-            {value: 'EmailLeadConfirmationSend', key: 25669654},
-            {value: 'SendToPhone', key: 28662167},
-            {value: 'ButtonView', key: 24173919}
+            {value: 'Search', key: "43"},
+            {value: 'Category', key: "13139640"},
+            {value: 'OpenMarkerWindow', key: "17"},
+            {value: 'Postal Code', key: "13147780"},
+            {value: 'Click', key: "5805100"},
+            {value: 'Details', key: "115"},
+            {value: 'Keyword', key: "13140307"},
+            {value: 'WebsiteClick', key: "13345557"},
+            {value: 'Click To Call', key: "5885831"},
+            {value: 'Interstitial-Button', key: "26773430"},
+            {value: 'EmailLeadOpen', key: "22622942"},
+            {value: 'Tab', key: "18107917"},
+            {value: 'Lead', key: "15350502"},
+            {value: 'EmailLeadSend', key: "22622892"},
+            {value: 'getDirections', key: "161"},
+            {value: 'EmailLeadNoticeOpen', key: "25669360"},
+            {value: 'SendToEmail', key: "23075289"},
+            {value: 'EmailLeadDisplay', key: "25669342"},
+            {value: 'EmailLeadConfirmationSend', key: "25669654"},
+            {value: 'SendToPhone', key: "28662167"},
+            {value: 'ButtonView', key: "24173919"}
         ];
         this.isLoading = false;
         this.transitions = null;
@@ -198,23 +198,41 @@
 
         this.load_dimension();
         this.submitMetaReport = function() {
-            var ajaxRequest = new ajaxHelper();
-            ajaxRequest.setLoadingElement('#ajaxLoading');
-            ajaxRequest.addParams({
-                module: 'MetaActionReport',
-                action: 'getEventAction',
-                idAction: this.actionType,
-                dimension1Name: this.dimension1Name,
-                dimension2Name: this.dimension2Name,
-                dimension3Name: this.dimension3Name,
-            }, 'get');
-            ajaxRequest.setCallback(
-                function (response) {
-                    $('#MetaResult').html(response);
-                }
-            );
-            ajaxRequest.setFormat('html');
-            ajaxRequest.send();
+            var $dataTableRoot = $('.dataTable[data-report="MetaActionReport.getEventAction"]');
+
+            // in the UI, the root element of a report has a JavaScript object associated to it.
+            // we can use this object to reload the report.
+            var dataTableInstance = $dataTableRoot.data('uiControlObject');
+
+            // query parameters then reload the report
+            dataTableInstance.param["dimension1Name"] = this.dimension1Name; 
+            dataTableInstance.param["dimension2Name"] = this.dimension2Name; 
+            dataTableInstance.param["dimension3Name"] = this.dimension3Name; 
+            dataTableInstance.param["dimension4Name"] = this.dimension4Name; 
+            dataTableInstance.param["dimension5Name"] = this.dimension5Name; 
+            dataTableInstance.param["idAction"] = this.actionType; 
+            // var url = window.location.href;
+            // url = broadcast.updateParamValue('dimension1Name=' + this.dimension1Name, url);
+            // url = broadcast.updateParamValue('dimension2Name=' + this.dimension2Name, url);
+            // url = broadcast.updateParamValue('dimension3Name=' + this.dimension3Name, url);
+            // url = broadcast.updateParamValue('dimension4Name=' + this.dimension4Name, url);
+            // url = broadcast.updateParamValue('dimension5Name=' + this.dimension5Name, url);
+            // url = broadcast.updateParamValue('idAction=' + this.actionType, url);
+            // window.location.href= url;
+            // dataTableInstance.reloadAjaxDataTable(
+            //     true
+            // );
+            extraParams = {
+            }
+            dataTableInstance.reloadAjaxDataTable();
+            dataTableInstance.notifyWidgetParametersChange(dataTableInstance.$element, {
+               dimension1Name: this.dimension1Name,
+               dimension2Name: this.dimension2Name,
+               dimension3Name: this.dimension3Name,
+               dimension4Name: this.dimension4Name,
+               dimension5Name: this.dimension5Name,
+               idAction: this.actionType
+            });
         }
     }
 })();

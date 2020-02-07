@@ -50,7 +50,7 @@ class GetMetaActionReport extends Base
         // $this->constantRowsCount = true;
 
         // If a subcategory is specified, the report will be displayed in the menu under this menu item
-        $this->subcategoryId = 'MetaActionReport_MetaActionReport';
+        //$this->subcategoryId = 'MetaActionReport_MetaActionReport';
     }
 
     /**

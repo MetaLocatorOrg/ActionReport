@@ -8,6 +8,7 @@
 
 namespace Piwik\Plugins\MetaActionReport\Reports;
 
+use Piwik\Common;
 use Piwik\Piwik;
 use Piwik\Plugin\Report;
 use Piwik\Plugin\ViewDataTable;
@@ -33,8 +34,8 @@ class GetEventAction extends Base
         $this->order = 1;
 
         // By default standard metrics are defined but you can customize them by defining an array of metric names
-        $this->metrics       = array('0');
-        $this->subcategoryId = 'Meta Reports';
+        $this->metrics       = array('Total_Action');
+        $this->subcategoryId = 'Meta Action Report';
 
 
         // Uncomment the next line if your report does not contain any processed metrics, otherwise default
@@ -70,8 +71,46 @@ class GetEventAction extends Base
         // $view->config->show_search = false;
         // $view->requestConfig->filter_sort_column = 'nb_visits';
         // $view->requestConfig->filter_limit = 10';
-
         $view->config->columns_to_display = array_merge(array('label'), $this->metrics);
+
+        if (!is_array($view->config->custom_parameters)) {
+            $view->config->custom_parameters = array();
+        }
+        if (!in_array("actionType", $view->config->custom_parameters)) { 
+            $view->config->custom_parameters["actionType"] = Common::getRequestVar('idAction', false, 'string');
+        }
+
+        if (!in_array("dimension1Name", $view->config->custom_parameters)) { 
+            $view->config->custom_parameters["dimension1Name"] = Common::getRequestVar('dimension1Name', false, 'string');;
+        }
+
+        if (!in_array("dimension2Name", $view->config->custom_parameters)) { 
+            $view->config->custom_parameters["dimension2Name"] = Common::getRequestVar('dimension2Name', false, 'string');;
+        }
+
+        if (!in_array("dimension3Name", $view->config->custom_parameters)) { 
+            $view->config->custom_parameters["dimension3Name"] = Common::getRequestVar('dimension3Name', false, 'string');;
+        }
+
+        if (!in_array("dimension4Name", $view->config->custom_parameters)) { 
+            $view->config->custom_parameters["dimension4Name"] = Common::getRequestVar('dimension4Name', false, 'string');;
+        }
+
+        if (!in_array("dimension5Name", $view->config->custom_parameters)) { 
+            $view->config->custom_parameters["dimension5Name"] = Common::getRequestVar('dimension5Name', false, 'string');;
+        }
+
+        $header_view = new View('@MetaActionReport/_Selector');
+        $header_view->clientSideParameters = $view->config->custom_parameters;
+        $view->requestConfig->request_parameters_to_modify["actionType"] = $view->config->custom_parameters["actionType"];
+        $view->requestConfig->request_parameters_to_modify["dimension1Name"] = $view->config->custom_parameters["dimension1Name"];
+        $view->requestConfig->request_parameters_to_modify["dimension2Name"] = $view->config->custom_parameters["dimension2Name"];
+        $view->requestConfig->request_parameters_to_modify["dimension3Name"] = $view->config->custom_parameters["dimension3Name"];
+        $view->requestConfig->request_parameters_to_modify["dimension4Name"] = $view->config->custom_parameters["dimension4Name"];
+        $view->requestConfig->request_parameters_to_modify["dimension5Name"] = $view->config->custom_parameters["dimension5Name"];
+        if (!$view->requestConfig->idSubtable) {
+            $view->config->show_header_message = $header_view->render();
+        }
     }
 
     /**

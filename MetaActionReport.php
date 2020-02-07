@@ -13,13 +13,20 @@ class MetaActionReport extends \Piwik\Plugin
     public function registerEvents()
     {
         return array(
-            //'AssetManager.getStylesheetFiles'        => 'getStylesheetFiles',
+            'AssetManager.getStylesheetFiles'        => 'getStylesheetFiles',
             'AssetManager.getJavaScriptFiles'        => 'getJsFiles',
         );
     }
+
     public function getJsFiles(&$jsFiles)
     {
         $jsFiles[] = 'plugins/MetaActionReport/javascripts/metaactionreport.js';
+        $jsFiles[] = 'plugins/MetaActionReport/javascripts/geteventaction.js';
         $jsFiles[] = 'plugins/MetaActionReport/angularjs/metaactionswitcher.controller.js';
+    }
+
+    public function getStylesheetFiles(&$stylesheets)
+    {
+        $stylesheets[] = "plugins/MetaActionReport/stylesheets/metaaction.less";
     }
 }
