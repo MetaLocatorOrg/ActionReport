@@ -99,9 +99,13 @@ class API extends \Piwik\Plugin\API
      * @param bool|string $segment
      * @return DataTable
      */
-    public function getEventAction($idSite, $period, $date, $segment = false, $dimension1Name="", $dimension2Name="", $dimension3Name="", $dimension4Name="", $dimension5Name="", $idAction=1, $idSubtable=null)
+    public function getEventAction($idSite, $period, $date, $segment = false, $dimension1Name="", $dimension2Name="", $dimension3Name="", $dimension4Name="", $dimension5Name="", $idAction=null, $idSubtable=null)
     {
         Piwik::checkUserHasViewAccess($idSite);
+        $dataTable = new DataTable();
+        if (!$idAction or !$dimension1Name) {
+            return $dataTable;
+        }
         $query = "
         SELECT
           la.server_time,
@@ -178,7 +182,6 @@ class API extends \Piwik\Plugin\API
         $bind = $queryInfo['bind'];
         $db = $this->getDb();
         $rows = $db->fetchAll($sql, $bind);
-        $dataTable = new DataTable();
         //$subTablesByKey[$key] = DataTable::makeFromIndexedArray($labelPerKey);
         DataTable::setMaximumDepthLevelAllowedAtLeast(5);
         $allMetricNames = array("meta_action" => "sum");
@@ -190,6 +193,9 @@ class API extends \Piwik\Plugin\API
             $firstLevelLabel = "Not defined";
             $secondLevelLabel = "Not defined";
             $thirdLevelLabel = "Not defined";
+            $fourthLevelLabel = "Not defined";
+            $fifthLevelLabel = "Not defined";
+
             if (isset($row[$dimension1Name])) {
                 $firstLevelLabel = $row[$dimension1Name];
             }
@@ -203,6 +209,16 @@ class API extends \Piwik\Plugin\API
                     $thirdLevelLabel = $row[$dimension3Name];
                 }
             }
+            if ($dimension2Name && $dimension3Name && $dimension4Name) {
+                if (isset($row[$dimension4Name])) {
+                    $fourthLevelLabel = $row[$dimension4Name];
+                }
+            }
+            if ($dimension2Name && $dimension3Name && $dimension4Name && $dimension5Name) {
+                if (isset($row[$dimension5Name])) {
+                    $fifthLevelLabel = $row[$dimension5Name];
+                }
+            }
             $countArray = ["meta_action" => 1];
             $metaDataArray->computeMetrics($countArray, $firstLevelLabel);
             if ($dimension2Name) {
@@ -210,6 +226,12 @@ class API extends \Piwik\Plugin\API
             }
             if ($dimension2Name && $dimension3Name) {
                 $metaDataArray->computeMetricsLevel3($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel);
+            }
+            if ($dimension2Name && $dimension3Name && $dimension4Name) {
+                $metaDataArray->computeMetricsLevel4($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel, $fourthLevelLabel);
+            }
+            if ($dimension2Name && $dimension3Name && $dimension4Name && $dimension5Name) {
+                $metaDataArray->computeMetricsLevel5($countArray, $firstLevelLabel, $secondLevelLabel, $thirdLevelLabel, $fourthLevelLabel, $fifthLevelLabel);
             }
         }
         $dataTable = $metaDataArray->asDataTable();
@@ -235,11 +257,11 @@ class API extends \Piwik\Plugin\API
         $dataArray[] = array(
             "server_time" => "",
             "idlink_va" => "",
-            "custom_dimension_1" => "1",
-            "custom_dimension_2" => "a",
             "custom_dimension_3" => "c3 - 1",
             "custom_dimension_4" => "c4 - 1",
             "custom_dimension_5" => "c5 - 1",
+            "custom_dimension_6" => "c6 - 1",
+            "custom_dimension_7" => "c7 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -248,11 +270,11 @@ class API extends \Piwik\Plugin\API
         $dataArray[] = array(
             "server_time" => "",
             "idlink_va" => "",
-            "custom_dimension_1" => "1",
-            "custom_dimension_2" => "b",
             "custom_dimension_3" => "c3 - 1",
             "custom_dimension_4" => "c4 - 2",
             "custom_dimension_5" => "c5 - 1",
+            "custom_dimension_6" => "c6 - 1",
+            "custom_dimension_7" => "c7 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -261,11 +283,11 @@ class API extends \Piwik\Plugin\API
         $dataArray[] = array(
             "server_time" => "",
             "idlink_va" => "",
-            "custom_dimension_1" => "2",
-            "custom_dimension_2" => "d",
             "custom_dimension_3" => "c3 - 1",
             "custom_dimension_4" => "c4 - 1",
             "custom_dimension_5" => "c5 - 2",
+            "custom_dimension_6" => "c6 - 1",
+            "custom_dimension_7" => "c7 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -274,11 +296,11 @@ class API extends \Piwik\Plugin\API
         $dataArray[] = array(
             "server_time" => "",
             "idlink_va" => "",
-            "custom_dimension_1" => "2",
-            "custom_dimension_2" => "d",
             "custom_dimension_3" => "c3 - 2",
             "custom_dimension_4" => "c4 - 1",
             "custom_dimension_5" => "c5 - 1",
+            "custom_dimension_6" => "c6 - 1",
+            "custom_dimension_7" => "c7 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -287,11 +309,11 @@ class API extends \Piwik\Plugin\API
         $dataArray[] = array(
             "server_time" => "",
             "idlink_va" => "",
-            "custom_dimension_1" => "2",
-            "custom_dimension_2" => "d",
             "custom_dimension_3" => "c3 - 3",
             "custom_dimension_4" => "c4 - 1",
             "custom_dimension_5" => "c5 - 1",
+            "custom_dimension_6" => "c6 - 1",
+            "custom_dimension_7" => "c7 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -300,11 +322,24 @@ class API extends \Piwik\Plugin\API
         $dataArray[] = array(
             "server_time" => "",
             "idlink_va" => "",
-            "custom_dimension_1" => "2",
-            "custom_dimension_2" => "d",
             "custom_dimension_3" => "c3 - 3",
             "custom_dimension_4" => "c4 - 1",
             "custom_dimension_5" => "c5 - 1",
+            "custom_dimension_6" => "c6 - 1",
+            "custom_dimension_7" => "c7 - 1",
+            "event_action" => "43",
+            "action_name" => "",
+            "NO_RESULTS" => 0,
+            "AUTOFIND" => 1
+        );
+        $dataArray[] = array(
+            "server_time" => "",
+            "idlink_va" => "",
+            "custom_dimension_3" => "c3 - 3",
+            "custom_dimension_4" => "c4 - 1",
+            "custom_dimension_5" => "c5 - 1",
+            "custom_dimension_6" => "c6 - 1",
+            "custom_dimension_7" => "c7 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,

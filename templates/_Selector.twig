@@ -51,6 +51,30 @@
             </div>
         </div>
     </div>
+    <div class="row"> 
+        <div class="col s12 m3">
+            <div piwik-field uicontrol="select" name="dimension4Name"
+                 ng-model="metaActionSwitcher.dimension4Name"
+                 data-title="{{ 'Dimension 4'|translate()|e('html_attr') }}"
+                 full-width="true"
+                 data-disabled="!metaActionSwitcher.isEnabled"
+                 value="{{ clientSideParameters.dimension4Name }}"
+                 options='metaActionSwitcher.dimensionOptions'>
+            </div>
+        </div>
+    </div>
+    <div class="row"> 
+        <div class="col s12 m3">
+            <div piwik-field uicontrol="select" name="dimension5Name"
+                 ng-model="metaActionSwitcher.dimension5Name"
+                 data-title="{{ 'Dimension 5'|translate()|e('html_attr') }}"
+                 full-width="true"
+                 data-disabled="!metaActionSwitcher.isEnabled"
+                 value="{{ clientSideParameters.dimension5Name }}"
+                 options='metaActionSwitcher.dimensionOptions'>
+            </div>
+        </div>
+    </div>
 
     <div piwik-activity-indicator loading="metaActionSwitcher.isLoading"></div>
 

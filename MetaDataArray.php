@@ -22,6 +22,8 @@ class MetaDataArray extends \Piwik\DataArray
     private $emptyRow = array();
 
     protected $dataThreeLevel = array();
+    protected $dataFourLevel = array();
+    protected $dataFiveLevel = array();
     private $aggregations = array();
 
     public $doneFirstLevel = false;
@@ -117,15 +119,8 @@ class MetaDataArray extends \Piwik\DataArray
             if (!isset($this->aggregations[$column])) {
                 continue;
             }
-
             if (isset($this->dataTwoLevels[$label][$sublabel][$column])) {
-                if ($this->aggregations[$column] === 'max') {
-                    $this->dataTwoLevels[$label][$sublabel][$column] = max($value, $this->dataTwoLevels[$label][$sublabel][$column]);
-                } elseif ($this->aggregations[$column] === 'min') {
-                    $this->dataTwoLevels[$label][$sublabel][$column] = min($value, $this->dataTwoLevels[$label][$sublabel][$column]);
-                } else {
-                    $this->dataTwoLevels[$label][$sublabel][$column] += $value;
-                }
+                $this->dataTwoLevels[$label][$sublabel][$column] += $value;
             } else {
                 $this->dataTwoLevels[$label][$sublabel][$column] = $value;
             }
@@ -172,16 +167,166 @@ class MetaDataArray extends \Piwik\DataArray
             }
 
             if (isset($this->dataThreeLevel[$label][$sublabel][$subsublabel][$column])) {
-                if ($this->aggregations[$column] === 'max') {
-                    $this->dataThreeLevel[$label][$sublabel][$subsublabel][$column] = max($value, $this->dataThreeLevel[$label][$sublabel][$subsublabel][$column]);
-                } elseif ($this->aggregations[$column] === 'min') {
-                    $this->dataThreeLevel[$label][$sublabel][$subsublabel][$column] = min($value, $this->dataThreeLevel[$label][$sublabel][$subsublabel][$column]);
-                } else {
-                    $this->dataThreeLevel[$label][$sublabel][$subsublabel][$column] += $value;
-                }
+                $this->dataThreeLevel[$label][$sublabel][$subsublabel][$column] += $value;
 
             } else {
                 $this->dataThreeLevel[$label][$sublabel][$subsublabel][$column] = $value;
+            }
+        }
+    }
+
+    public function computeMetricsLevel4($row, $label, $sublabel, $subsublabel, $sublabel_l3)
+    {
+        if (!isset($subsublabel)) {
+            return;
+        }
+
+        if ($this->isEmptyLabel($label)) {
+            $label = Archiver::LABEL_NOT_DEFINED;
+        }
+
+        if (!isset($this->data[$label])) {
+            $this->data[$label] = $this->createEmptyRow(1);
+        }
+
+        if (!isset($this->dataTwoLevels[$label])) {
+            $this->dataTwoLevels[$label] = array();
+        }
+
+        if (!isset($this->dataTwoLevels[$label][$sublabel])) {
+            $this->dataTwoLevels[$label][$sublabel] = $this->createEmptyRow(2);
+        }
+        
+        // Level 3
+
+        if (!isset($this->dataThreeLevel[$label])) {
+            $this->dataThreeLevel[$label] = array();
+        }
+
+        if (!isset($this->dataThreeLevel[$label][$sublabel])) {
+            $this->dataThreeLevel[$label][$sublabel] = array();
+        }
+
+        if (!isset($this->dataThreeLevel[$label][$sublabel][$subsublabel])) {
+            $this->dataThreeLevel[$label][$sublabel][$subsublabel] = $this->createEmptyRow(3);
+        }
+
+
+        // Level 4
+        if (!isset($this->dataFourLevel[$label])) {
+            $this->dataFourLevel[$label] = array();
+        }
+
+        if (!isset($this->dataFourLevel[$label][$sublabel])) {
+            $this->dataFourLevel[$label][$sublabel] = array();
+        }
+
+        if (!isset($this->dataFourLevel[$label][$sublabel][$subsublabel])) {
+            $this->dataFourLevel[$label][$sublabel][$subsublabel] = array(); 
+        }
+
+        if (!isset($this->dataFourLevel[$label][$sublabel][$subsublabel][$sublabel_l3])) {
+            $this->dataFourLevel[$label][$sublabel][$subsublabel][$sublabel_l3] = $this->createEmptyRow(4);
+        }
+
+        foreach ($row as $column => $value) {
+            if (!isset($this->aggregations[$column])) {
+                continue;
+            }
+
+            if (isset($this->dataFourLevel[$label][$sublabel][$subsublabel][$sublabel_l3][$column])) {
+                $this->dataFourLevel[$label][$sublabel][$subsublabel][$sublabel_l3][$column] += $value;
+
+            } else {
+                $this->dataFourLevel[$label][$sublabel][$subsublabel][$sublabel_l3][$column] = $value;
+            }
+        }
+    }
+
+    public function computeMetricsLevel5($row, $label, $sublabel, $subsublabel, $sublabel_l3, $sublabel_l4)
+    {
+        if (!isset($subsublabel)) {
+            return;
+        }
+
+        if ($this->isEmptyLabel($label)) {
+            $label = Archiver::LABEL_NOT_DEFINED;
+        }
+
+        if (!isset($this->data[$label])) {
+            $this->data[$label] = $this->createEmptyRow(1);
+        }
+
+        if (!isset($this->dataTwoLevels[$label])) {
+            $this->dataTwoLevels[$label] = array();
+        }
+
+        if (!isset($this->dataTwoLevels[$label][$sublabel])) {
+            $this->dataTwoLevels[$label][$sublabel] = $this->createEmptyRow(2);
+        }
+        
+        // Level 3
+
+        if (!isset($this->dataThreeLevel[$label])) {
+            $this->dataThreeLevel[$label] = array();
+        }
+
+        if (!isset($this->dataThreeLevel[$label][$sublabel])) {
+            $this->dataThreeLevel[$label][$sublabel] = array();
+        }
+
+        if (!isset($this->dataThreeLevel[$label][$sublabel][$subsublabel])) {
+            $this->dataThreeLevel[$label][$sublabel][$subsublabel] = $this->createEmptyRow(3);
+        }
+
+
+        // Level 4
+        if (!isset($this->dataFourLevel[$label])) {
+            $this->dataFourLevel[$label] = array();
+        }
+
+        if (!isset($this->dataFourLevel[$label][$sublabel])) {
+            $this->dataFourLevel[$label][$sublabel] = array();
+        }
+
+        if (!isset($this->dataFourLevel[$label][$sublabel][$subsublabel])) {
+            $this->dataFourLevel[$label][$sublabel][$subsublabel] = array(); 
+        }
+
+        if (!isset($this->dataFourLevel[$label][$sublabel][$subsublabel][$sublabel_l3])) {
+            $this->dataFourLevel[$label][$sublabel][$subsublabel][$sublabel_l3] = $this->createEmptyRow(4);
+        }
+
+        // Level 5
+        if (!isset($this->dataFiveLevel[$label])) {
+            $this->dataFiveLevel[$label] = array();
+        }
+
+        if (!isset($this->dataFiveLevel[$label][$sublabel])) {
+            $this->dataFiveLevel[$label][$sublabel] = array();
+        }
+
+        if (!isset($this->dataFiveLevel[$label][$sublabel][$subsublabel])) {
+            $this->dataFiveLevel[$label][$sublabel][$subsublabel] = array(); 
+        }
+
+        if (!isset($this->dataFiveLevel[$label][$sublabel][$subsublabel][$sublabel_l3])) {
+            $this->dataFiveLevel[$label][$sublabel][$subsublabel][$sublabel_l3] = array();
+        }
+
+        if (!isset($this->dataFiveLevel[$label][$sublabel][$subsublabel][$sublabel_l3][$sublabel_l4])) {
+            $this->dataFiveLevel[$label][$sublabel][$subsublabel][$sublabel_l3][$sublabel_l4] = $this->createEmptyRow(5);;
+        }
+
+        foreach ($row as $column => $value) {
+            if (!isset($this->aggregations[$column])) {
+                continue;
+            }
+
+            if (isset($this->dataFiveLevel[$label][$sublabel][$subsublabel][$sublabel_l3][$sublabel_l4][$column])) {
+                $this->dataFiveLevel[$label][$sublabel][$subsublabel][$sublabel_l3][$sublabel_l4][$column] += $value;
+            } else {
+                $this->dataFiveLevel[$label][$sublabel][$subsublabel][$sublabel_l3][$sublabel_l4][$column] = $value;
             }
         }
     }
@@ -198,6 +343,47 @@ class MetaDataArray extends \Piwik\DataArray
      */
     public function asDataTable()
     {
+        if (!empty($this->dataFiveLevel)) {
+            $subTable_lv1 = array();
+
+            foreach ($this->dataFiveLevel as $label_lv1 => $keyTables_lv2) {
+                $subTablesByKey_lv2 = array();
+                foreach ($keyTables_lv2 as $label_lv2 => $keyTables_lv3) {
+                    $subTablesByKey_lv3 = array();
+                    foreach ($keyTables_lv3 as $label_lv3 => $keyTables_lv4) {
+                        $subTablesByKey_lv4 = array();
+                        foreach( $keyTables_lv4 as $label_lv4 => $keyTables_lv5) {
+                            $subTablesByKey_lv4[$label_lv4] = DataTable::makeFromIndexedArray($keyTables_lv5);
+                        }
+                        $subTablesByKey_lv3[$label_lv3] = DataTable::makeFromIndexedArray($this->dataFourLevel[$label_lv1][$label_lv2][$label_lv3], $subTablesByKey_lv4);
+                    }
+                    $subTablesByKey_lv2[$label_lv2] = DataTable::makeFromIndexedArray($this->dataThreeLevel[$label_lv1][$label_lv2], $subTablesByKey_lv3);
+                }
+
+                $subTable_lv1[$label_lv1] = DataTable::makeFromIndexedArray($this->dataTwoLevels[$label_lv1], $subTablesByKey_lv2);
+            }
+            return DataTable::makeFromIndexedArray($this->data, $subTable_lv1);
+        }
+
+        if (!empty($this->dataFourLevel)) {
+            $subTable_lv1 = array();
+
+            foreach ($this->dataFourLevel as $label_lv1 => $keyTables_lv2) {
+                $subTablesByKey_lv2 = array();
+                foreach ($keyTables_lv2 as $label_lv2 => $keyTables_lv3) {
+                    $subTablesByKey_lv3 = array();
+                    foreach ($keyTables_lv3 as $label_lv3 => $keyTables_lv4) {
+                        $subTablesByKey_lv3[$label_lv3] = DataTable::makeFromIndexedArray($keyTables_lv4);
+                    }
+                    $subTablesByKey_lv2[$label_lv2] = DataTable::makeFromIndexedArray($this->dataThreeLevel[$label_lv1][$label_lv2], $subTablesByKey_lv3);
+                }
+
+                $subTable_lv1[$label_lv1] = DataTable::makeFromIndexedArray($this->dataTwoLevels[$label_lv1], $subTablesByKey_lv2);
+            }
+
+            return DataTable::makeFromIndexedArray($this->data, $subTable_lv1);
+        }
+
         if (!empty($this->dataThreeLevel)) {
             $subTableByParentLabel = array();
 
@@ -209,7 +395,6 @@ class MetaDataArray extends \Piwik\DataArray
 
                 $subTableByParentLabel[$label] = DataTable::makeFromIndexedArray($this->dataTwoLevels[$label], $subTablesByKey);
             }
-
             return DataTable::makeFromIndexedArray($this->data, $subTableByParentLabel);
         }
 
