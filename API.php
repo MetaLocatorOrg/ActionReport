@@ -19,6 +19,8 @@ use Piwik\Period\Factory as PeriodFactory;
 use Piwik\Plugins\MetaActionReport\MetaDataArray;
 use Piwik\Segment;
 
+const DIMENSION_QUERY_COUNT = 20;
+
 
 function getSubTableRecursive($dataTable, $idSubtable) {
     if ($dataTable->getRowFromIdSubDataTable($idSubtable)) {
@@ -141,7 +143,7 @@ class API extends \Piwik\Plugin\API
         }
         $startDate = $real_period->getDateTimeStart()->getDatetime();
         $endDate = $real_period->getDateTimeEnd()->getDatetime();
-        $dimension_query = $this->getDimensionQuery(20);
+        $dimension_query = $this->getDimensionQuery(DIMENSION_QUERY_COUNT);
 
         $select = "log_link_visit_action.idaction_event_action, log_link_visit_action.idaction_name, log_link_visit_action.server_time, log_link_visit_action.idlink_va " . $dimension_query;
         $from = "log_link_visit_action";
@@ -179,7 +181,7 @@ class API extends \Piwik\Plugin\API
         $dataTable = new DataTable();
         //$subTablesByKey[$key] = DataTable::makeFromIndexedArray($labelPerKey);
         DataTable::setMaximumDepthLevelAllowedAtLeast(5);
-        $allMetricNames = array("custom_dimension_1");
+        $allMetricNames = array("meta_action" => "sum");
         $metaDataArray = new MetaDataArray($allMetricNames);
         $dataArray = $this->getExampleDataArray();
         # Debug replace $rows by dataArray
@@ -201,7 +203,7 @@ class API extends \Piwik\Plugin\API
                     $thirdLevelLabel = $row[$dimension3Name];
                 }
             }
-            $countArray = ["0" => 1];
+            $countArray = ["meta_action" => 1];
             $metaDataArray->computeMetrics($countArray, $firstLevelLabel);
             if ($dimension2Name) {
                 $metaDataArray->computeMetricsLevel2($countArray, $firstLevelLabel, $secondLevelLabel);
@@ -211,6 +213,15 @@ class API extends \Piwik\Plugin\API
             }
         }
         $dataTable = $metaDataArray->asDataTable();
+        $filterSortColumn = Common::getRequestVar('filter_sort_column', false, 'string');
+        if ($filterSortColumn !== false) {
+            $filterSortOrder = Common::getRequestVar('filter_sort_order', false, 'string');
+            if (!$filterSortOrder) {
+                $filterSortOrder = "desc";
+            }
+            $dataTable->filter('Sort', array($filterSortColumn, $filterSortOrder, $naturalSort = false, $expanded=false));
+        }
+
          
         if ($idSubtable) {
             return getSubTableRecursive($dataTable, $idSubtable);
@@ -226,9 +237,9 @@ class API extends \Piwik\Plugin\API
             "idlink_va" => "",
             "custom_dimension_1" => "1",
             "custom_dimension_2" => "a",
-            "custom_dimension_3" => "v",
-            "custom_dimension_4" => "e",
-            "custom_dimension_5" => "f",
+            "custom_dimension_3" => "c3 - 1",
+            "custom_dimension_4" => "c4 - 1",
+            "custom_dimension_5" => "c5 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -239,9 +250,9 @@ class API extends \Piwik\Plugin\API
             "idlink_va" => "",
             "custom_dimension_1" => "1",
             "custom_dimension_2" => "b",
-            "custom_dimension_3" => "v",
-            "custom_dimension_4" => "e",
-            "custom_dimension_5" => "e",
+            "custom_dimension_3" => "c3 - 1",
+            "custom_dimension_4" => "c4 - 2",
+            "custom_dimension_5" => "c5 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -252,9 +263,9 @@ class API extends \Piwik\Plugin\API
             "idlink_va" => "",
             "custom_dimension_1" => "2",
             "custom_dimension_2" => "d",
-            "custom_dimension_3" => "v",
-            "custom_dimension_4" => "e",
-            "custom_dimension_5" => "f",
+            "custom_dimension_3" => "c3 - 1",
+            "custom_dimension_4" => "c4 - 1",
+            "custom_dimension_5" => "c5 - 2",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -265,9 +276,9 @@ class API extends \Piwik\Plugin\API
             "idlink_va" => "",
             "custom_dimension_1" => "2",
             "custom_dimension_2" => "d",
-            "custom_dimension_3" => "v",
-            "custom_dimension_4" => "c",
-            "custom_dimension_5" => "e",
+            "custom_dimension_3" => "c3 - 2",
+            "custom_dimension_4" => "c4 - 1",
+            "custom_dimension_5" => "c5 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,
@@ -278,9 +289,22 @@ class API extends \Piwik\Plugin\API
             "idlink_va" => "",
             "custom_dimension_1" => "2",
             "custom_dimension_2" => "d",
-            "custom_dimension_3" => "v",
-            "custom_dimension_4" => "c",
-            "custom_dimension_5" => "e",
+            "custom_dimension_3" => "c3 - 3",
+            "custom_dimension_4" => "c4 - 1",
+            "custom_dimension_5" => "c5 - 1",
+            "event_action" => "43",
+            "action_name" => "",
+            "NO_RESULTS" => 0,
+            "AUTOFIND" => 1
+        );
+        $dataArray[] = array(
+            "server_time" => "",
+            "idlink_va" => "",
+            "custom_dimension_1" => "2",
+            "custom_dimension_2" => "d",
+            "custom_dimension_3" => "c3 - 3",
+            "custom_dimension_4" => "c4 - 1",
+            "custom_dimension_5" => "c5 - 1",
             "event_action" => "43",
             "action_name" => "",
             "NO_RESULTS" => 0,

@@ -34,7 +34,7 @@ class GetEventAction extends Base
         $this->order = 1;
 
         // By default standard metrics are defined but you can customize them by defining an array of metric names
-        $this->metrics       = array('0');
+        $this->metrics       = array('meta_action');
         $this->subcategoryId = 'Meta Action Report';
 
 
@@ -69,7 +69,8 @@ class GetEventAction extends Base
         }
 
         // $view->config->show_search = false;
-        // $view->requestConfig->filter_sort_column = 'nb_visits';
+        $view->requestConfig->filter_sort_column = 'meta_action';
+        $view->requestConfig->filter_sort_order = 'desc';
         // $view->requestConfig->filter_limit = 10';
         $view->config->columns_to_display = array_merge(array('label'), $this->metrics);
 

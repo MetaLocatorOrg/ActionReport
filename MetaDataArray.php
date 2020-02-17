@@ -81,13 +81,7 @@ class MetaDataArray extends \Piwik\DataArray
             }
 
             if (isset($this->data[$label][$column])) {
-                if ($this->aggregations[$column] === 'max') {
-                    $this->data[$label][$column] = max($value, $this->data[$label][$column]);
-                } elseif ($this->aggregations[$column] === 'min') {
-                    $this->data[$label][$column] = min($value, $this->data[$label][$column]);
-                } else {
-                    $this->data[$label][$column] += $value;
-                }
+                $this->data[$label][$column] += $value;
             } else {
                 $this->data[$label][$column] = $value;
             }
