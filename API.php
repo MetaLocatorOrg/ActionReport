@@ -140,7 +140,7 @@ class API extends \Piwik\Plugin\API
         $queryInfo = $segment->getSelectQuery($select, $from, $where, $whereBind, $orderBy, $groupBy);
 
         $sql = "SELECT 
-                COUNT(DISTINCT idvisit) as unique_action ,
+                COUNT(DISTINCT idvisit) as meta_unique_action,
                 COUNT(*) as meta_action
                 $dimension_query 
                 FROM ({$queryInfo['sql']}) as log_link_visit_action 
