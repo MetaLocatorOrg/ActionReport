@@ -71,6 +71,20 @@ class API extends \Piwik\Plugin\API
         return $result;
     }
 
+    private function getGroupby($number_of_dimension)
+    {
+        $result = "";
+        for($i = 1; $i < $number_of_dimension + 1; ++$i) {
+            if ($i == 1) {
+                $result .= "log_link_visit_action.`custom_dimension_" . $i ."`";
+            } else {
+                $result .= ", log_link_visit_action.`custom_dimension_" . $i ."`";
+            }
+        }
+        return $result;
+    }
+
+
     public function getDimensionBySite($idSite, $period, $date, $segment = false)
     {
         $dimensions = Request::processRequest('CustomDimensions.getConfiguredCustomDimensions', ['idSite' => $idSite], []);
@@ -106,40 +120,6 @@ class API extends \Piwik\Plugin\API
         if (!$idAction or !$dimension1Name) {
             return $dataTable;
         }
-        $query = "
-        SELECT
-          la.server_time,
-          la.idlink_va,
-          la.`custom_dimension_1`,
-          la.`custom_dimension_2`,
-          la.`custom_dimension_3`,
-          la.`custom_dimension_4`,
-          la.`custom_dimension_5`,
-          a.name AS event_action ,
-          aa.name AS action_name,
-          CASE
-            WHEN LOCATE('No Results', aa.name) > 0
-            THEN 1
-            ELSE 0
-          END AS NO_RESULTS,
-          CASE
-            WHEN LOCATE('Autofind', aa.name) > 0
-            THEN 1
-            ELSE 0
-          END AS AUTOFIND
-        FROM
-          " . Common::prefixTable('log_link_visit_action') . " la
-          LEFT JOIN " . Common::prefixTable('log_action') . " a
-            ON a.`idaction` = la.`idaction_event_action`
-          LEFT JOIN " . Common::prefixTable('log_action') . " aa
-            ON aa.`idaction` = la.`idaction_name`
-        WHERE 1
-        AND la.idsite = ?
-        AND la.server_time >= ?
-        AND la.server_time <= ?
-        AND la.`idaction_event_action` = ?
-        ORDER BY la.server_time DESC 
-        ";
         if (strpos($date, ',') === false) {
             $real_period = PeriodFactory::build($period, $date);
         } else {
@@ -149,42 +129,32 @@ class API extends \Piwik\Plugin\API
         $endDate = $real_period->getDateTimeEnd()->getDatetime();
         $dimension_query = $this->getDimensionQuery(DIMENSION_QUERY_COUNT);
 
-        $select = "log_link_visit_action.idaction_event_action, log_link_visit_action.idaction_name, log_link_visit_action.server_time, log_link_visit_action.idlink_va " . $dimension_query;
+        $select = "log_link_visit_action.idaction_event_action, log_link_visit_action.idaction_name, log_link_visit_action.server_time, log_link_visit_action.idlink_va, log_link_visit_action.idvisit " . $dimension_query;
         $from = "log_link_visit_action";
         $where = "log_link_visit_action.idsite = ? AND log_link_visit_action.server_time >= ? AND log_link_visit_action.server_time <= ? AND log_link_visit_action.idaction_event_action = ?";
         $whereBind = array($idSite, $startDate, $endDate,  $idAction);
         $orderBy = False;
         $groupBy = False;
+        $groupBy_query = $this->getGroupby(DIMENSION_QUERY_COUNT);
         $segment = new Segment($segment, $idSite);
         $queryInfo = $segment->getSelectQuery($select, $from, $where, $whereBind, $orderBy, $groupBy);
 
         $sql = "SELECT 
-                log_link_visit_action.server_time,
-                log_link_visit_action.idlink_va
-                " . $dimension_query . "
-                , a.name AS event_action ,
-                aa.name AS action_name,
-                CASE
-                  WHEN LOCATE('No Results', aa.name) > 0
-                  THEN 1
-                 ELSE 0
-                END AS NO_RESULTS,
-                CASE
-                  WHEN LOCATE('Autofind', aa.name) > 0
-                  THEN 1
-                  ELSE 0
-                END AS AUTOFIND
+                COUNT(DISTINCT idvisit) as unique_action ,
+                COUNT(*) as meta_action
+                $dimension_query 
                 FROM ({$queryInfo['sql']}) as log_link_visit_action 
                 LEFT JOIN " . Common::prefixTable('log_action') . " a
                 ON a.`idaction` = log_link_visit_action.`idaction_event_action`
                 LEFT JOIN " . Common::prefixTable('log_action') . " aa
-                ON aa.`idaction` = log_link_visit_action.`idaction_name`";
+                ON aa.`idaction` = log_link_visit_action.`idaction_name`
+                GROUP BY $groupBy_query";
         $bind = $queryInfo['bind'];
         $db = $this->getDb();
         $rows = $db->fetchAll($sql, $bind);
         //$subTablesByKey[$key] = DataTable::makeFromIndexedArray($labelPerKey);
         DataTable::setMaximumDepthLevelAllowedAtLeast(5);
-        $allMetricNames = array("meta_action" => "sum");
+        $allMetricNames = array("meta_action" => "sum", "meta_unique_action" => "sum");
         $metaDataArray = new MetaDataArray($allMetricNames);
         $dataArray = $this->getExampleDataArray();
         # Debug replace $rows by dataArray
@@ -219,7 +189,7 @@ class API extends \Piwik\Plugin\API
                     $fifthLevelLabel = $row[$dimension5Name];
                 }
             }
-            $countArray = ["meta_action" => 1];
+            $countArray = ["meta_action" => $row["meta_action"], "meta_unique_action" => $row["meta_unique_action"]];
             $metaDataArray->computeMetrics($countArray, $firstLevelLabel);
             if ($dimension2Name) {
                 $metaDataArray->computeMetricsLevel2($countArray, $firstLevelLabel, $secondLevelLabel);

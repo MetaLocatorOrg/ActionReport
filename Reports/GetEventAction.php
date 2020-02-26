@@ -34,7 +34,7 @@ class GetEventAction extends Base
         $this->order = 1;
 
         // By default standard metrics are defined but you can customize them by defining an array of metric names
-        $this->metrics       = array('meta_action');
+        $this->metrics       = array('meta_action', 'meta_unique_action');
         $this->subcategoryId = 'Meta Action Report';
 
 
