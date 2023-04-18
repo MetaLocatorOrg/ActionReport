@@ -4,13 +4,13 @@
     "version": "0.1.0",
     "theme": false,
     "require": {
-        "piwik": ">=3.12.0-stable,<4.0.0-b1"
+        "piwik": ">=3.12.0-stable,<5.0.0-b1"
     },
     "authors": [
         {
-            "name": "Matomo",
-            "email": "",
-            "homepage": ""
+            "name": "MetaLocator",
+            "email": "support@metalocator.com",
+            "homepage": "https://metalocator.com"
         }
     ],
     "support": {
